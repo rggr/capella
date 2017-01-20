@@ -1,0 +1,6 @@
+[package]
+name = "capella"
+version = "0.1.0"
+authors = ["Garrett Squire <garrettsquire@gmail.com>"]
+
+[dependencies]
