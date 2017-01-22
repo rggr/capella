@@ -1,3 +1,6 @@
+//! The error module defines custom errors as well as the appropriate conversions needed for
+//! capella.
+
 use std::fmt;
 use std::error::Error as StdError;
 use std::io;

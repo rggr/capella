@@ -92,7 +92,6 @@ pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
         metric.sample_rate = Some(r);
     }
 
-
     Ok(metric)
 }
 

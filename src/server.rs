@@ -1,3 +1,5 @@
+//! The server module defines the codec used for parsing stats in capella.
+
 use std::io;
 use std::net::SocketAddr;
 
