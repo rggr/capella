@@ -17,6 +17,8 @@ impl UdpCodec for StatsCodec {
         Ok((*addr, buf.to_vec()))
     }
 
+    // Since stat collecting is fire and forget, we don't need to write data
+    // back to the client.
     fn encode(&mut self, addr: Self::Out, _: &mut Vec<u8>) -> SocketAddr {
         addr
     }
