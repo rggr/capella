@@ -98,10 +98,10 @@ pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
 
 #[cfg(test)]
 mod tests {
-    use super::{Metric, parse_metric};
+    use super::{Metric, MetricType, parse_metric};
 
     #[test]
-    fn simple_meter() {
+    fn good_simple_meter() {
         let packet = b"test:1|m";
         let m1 = parse_metric(packet).unwrap();
 
@@ -113,8 +113,34 @@ mod tests {
     }
 
     #[test]
-    fn fail_to_parse() {
+    fn bad_parse_double_colon() {
         let packet = b"test::1|c";
+        assert!(parse_metric(packet).is_err());
+    }
+
+    #[test]
+    fn good_timing_with_rate() {
+        let packet = b"test:1|ms|@0.1";
+        let m1 = parse_metric(packet).unwrap();
+
+        let mut m2 = Metric::new();
+        m2.name = String::from("test");
+        m2.value = 1;
+        m2.metric_type = MetricType::Timer;
+        m2.sample_rate = Some(0.1);
+
+        assert_eq!(m1, m2);
+    }
+
+    #[test]
+    fn bad_parse_float_value() {
+        let packet = b"test:1.0|g";
+        assert!(parse_metric(packet).is_err());
+    }
+
+    #[test]
+    fn bad_parse_unknown_metric_type() {
+        let packet = b"test:1|a";
         assert!(parse_metric(packet).is_err());
     }
 }

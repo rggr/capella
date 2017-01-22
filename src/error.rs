@@ -1,5 +1,6 @@
 use std::fmt;
 use std::error::Error as StdError;
+use std::io;
 use std::num::{ParseFloatError, ParseIntError};
 
 use self::Error::Parse;
@@ -15,7 +16,7 @@ pub enum Error {
 impl StdError for Error {
     fn description(&self) -> &str {
         match *self {
-            Parse => "Error parsing statistic",
+            Parse => "Error parsing metric",
         }
     }
 }
@@ -26,6 +27,8 @@ impl fmt::Display for Error {
     }
 }
 
+// The following `From` conversions are used for parsing integers or floats while destructuring
+// a packet.
 impl From<ParseIntError> for Error {
     fn from(_: ParseIntError) -> Error {
         Error::Parse
@@ -35,5 +38,12 @@ impl From<ParseIntError> for Error {
 impl From<ParseFloatError> for Error {
     fn from(_: ParseFloatError) -> Error {
         Error::Parse
+    }
+}
+
+// TODO: Should I be doing this for a library type?
+impl From<Error> for io::Error {
+    fn from(e: Error) -> io::Error {
+        io::Error::new(io::ErrorKind::Other, e.description())
     }
 }
