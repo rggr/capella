@@ -55,7 +55,7 @@ impl Metric {
 pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
     lazy_static! {
         // TODO: Learn how to write this over multiple lines.
-        static ref PATTERN: Regex = Regex::new(r"(?P<name>\w+):((?P<sign>\-|\+))?(?P<val>\d+)\|(?P<type>\w+)(\|@(?P<rate>\d+\.\d+))?").unwrap();
+        static ref PATTERN: Regex = Regex::new(r"(?P<name>[\w\.]+):((?P<sign>\-|\+))?(?P<val>\d+)\|(?P<type>\w+)(\|@(?P<rate>\d+\.\d+))?").unwrap();
     }
 
     if let Ok(val) = str::from_utf8(packet) {
@@ -141,5 +141,18 @@ mod tests {
     fn bad_parse_unknown_metric_type() {
         let packet = b"test:1|a";
         assert!(parse_metric(packet).is_err());
+    }
+
+    #[test]
+    fn good_nested_metric_name() {
+        let packet = b"test.nested.name:1|c";
+        let m1 = parse_metric(packet).unwrap();
+
+        let mut m2 = Metric::new();
+        m2.name = String::from("test.nested.name");
+        m2.value = 1;
+        m2.metric_type = MetricType::Counter;
+
+        assert_eq!(m1, m2);
     }
 }
