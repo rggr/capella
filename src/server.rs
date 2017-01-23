@@ -5,7 +5,8 @@ use std::net::SocketAddr;
 
 use futures::{Stream, Sink};
 
-use tokio_core::net::UdpCodec;
+use tokio_core::net::{UdpCodec, UdpSocket};
+use tokio_core::reactor::Core;
 
 use parse::{self, Metric};
 
@@ -22,10 +23,12 @@ impl UdpCodec for StatsCodec {
 
         // See if we got multiple metrics.
         if buf.contains(&b'\n') {
-            for m in buf.split(|c| *c == b'\n') {
+            // Based on the behavior of split, we need to filter out zero-length chunks.
+            for m in buf.split(|c| *c == b'\n').filter(|chunk| chunk.len() > 0) {
                 let metric = parse::parse_metric(m)?;
                 metrics.push(metric);
             }
+            return Ok((*addr, metrics));
         }
 
         // We only got one metric sent.
@@ -40,4 +43,23 @@ impl UdpCodec for StatsCodec {
     fn encode(&mut self, addr: Self::Out, _: &mut Vec<u8>) -> SocketAddr {
         addr
     }
+}
+
+// TODO: This will need to allow for configuration.
+pub fn start_udp_server() {
+    let mut core = Core::new().unwrap();
+    let handle = core.handle();
+    let addr: SocketAddr = "127.0.0.1:8125".parse().unwrap();
+    let s = UdpSocket::bind(&addr, &handle).unwrap();
+
+    let (sink, stream) = s.framed(StatsCodec).split();
+
+    // This is the event loop stream in which all values are parsed.
+    let events = stream.map(move |(addr, messages)| {
+        println!("{:?}", messages);
+        addr
+    });
+    let future = sink.send_all(events);
+
+    drop(core.run(future));
 }

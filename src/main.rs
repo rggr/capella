@@ -9,6 +9,9 @@ mod error;
 mod parse;
 mod server;
 
+use server::start_udp_server;
+
 fn main() {
     println!("Hello, world!");
+    start_udp_server();
 }
