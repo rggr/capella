@@ -13,7 +13,8 @@ cargo test
 ```
 
 ### Authors
-capella was started by [Garrett](https://github.com/gsquire) and [Ralph](https://github.com/deckarep)
+capella was started by [Garrett](https://github.com/gsquire) and [Ralph](https://github.com/deckarep).
+The name is inspired from one of Garrett's favorite bands, Rosetta.
 
 ### License
 capella is released under the MIT license.
