@@ -12,6 +12,6 @@ mod server;
 use server::start_udp_server;
 
 fn main() {
-    println!("Hello, world!");
+    println!("starting server...");
     start_udp_server();
 }

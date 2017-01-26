@@ -55,11 +55,15 @@ pub fn start_udp_server() {
     let (sink, stream) = s.framed(StatsCodec).split();
 
     // This is the event loop stream in which all values are parsed.
-    let events = stream.map(move |(addr, messages)| {
-        println!("{:?}", messages);
-        addr
+    // TODO: Investigate why I can't figure out how to chain functions to catch the error case.
+    use error::CapellaResult;
+    let events = stream.then(|res| {
+        let v = res.unwrap_or(("0.0.0.0:8125".parse().unwrap(), vec![]));
+        println!("{:?}", v.1);
+        let r: CapellaResult<SocketAddr> = Ok(v.0);
+        r
     });
-    let future = sink.send_all(events);
+    let f = sink.send_all(events);
 
-    drop(core.run(future));
+    drop(core.run(f));
 }
