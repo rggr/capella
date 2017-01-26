@@ -8,6 +8,8 @@ use futures::{Stream, Sink};
 use tokio_core::net::{UdpCodec, UdpSocket};
 use tokio_core::reactor::Core;
 
+use cache::CapellaCache;
+
 use parse::{self, Metric};
 
 /// StatsCodec defines the UDP parser used to accept packets and returns a new
@@ -46,7 +48,7 @@ impl UdpCodec for StatsCodec {
 }
 
 // TODO: This will need to allow for configuration.
-pub fn start_udp_server() {
+pub fn start_udp_server(cache: &mut CapellaCache) {
     let mut core = Core::new().unwrap();
     let handle = core.handle();
     let addr: SocketAddr = "127.0.0.1:8125".parse().unwrap();
@@ -59,7 +61,13 @@ pub fn start_udp_server() {
     use error::CapellaResult;
     let events = stream.then(|res| {
         let v = res.unwrap_or(("0.0.0.0:8125".parse().unwrap(), vec![]));
+        if v.1.len() == 0 {
+            cache.bad_metric_increase();
+        }
         println!("{:?}", v.1);
+        for m in &v.1 {
+            cache.add_metric(m);
+        }
         let r: CapellaResult<SocketAddr> = Ok(v.0);
         r
     });

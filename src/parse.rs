@@ -34,10 +34,10 @@ impl FromStr for MetricType {
 /// A Metric defines a published client event.
 #[derive(Debug, PartialEq)]
 pub struct Metric {
-    name: String,
-    value: i64,
-    metric_type: MetricType,
-    sample_rate: Option<f32>,
+    pub name: String,
+    pub value: i64,
+    pub metric_type: MetricType,
+    pub sample_rate: Option<f32>,
 }
 
 impl Metric {
