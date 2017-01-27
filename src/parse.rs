@@ -54,8 +54,12 @@ impl Metric {
 /// The parse_metric function trys to break down a single UDP packet into a single metric.
 pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
     lazy_static! {
-        // TODO: Learn how to write this over multiple lines.
-        static ref PATTERN: Regex = Regex::new(r"(?P<name>[\w\.]+):((?P<sign>\-|\+))?(?P<val>\d+)\|(?P<type>\w+)(\|@(?P<rate>\d+\.\d+))?").unwrap();
+        static ref PATTERN: Regex = Regex::new(r"(?x)
+            (?P<name>[\w\.]+):
+            ((?P<sign>\-|\+))?
+            (?P<val>([0-9]*[.])?[0-9]+)
+            \|(?P<type>\w+)
+            (\|@(?P<rate>\d+\.\d+))?").unwrap();
     }
 
     if let Ok(val) = str::from_utf8(packet) {
@@ -132,9 +136,9 @@ mod tests {
     }
 
     #[test]
-    fn bad_parse_float_value() {
+    fn good_parse_float_value() {
         let packet = b"test:1.0|g";
-        assert!(parse_metric(packet).is_err());
+        assert!(parse_metric(packet).is_ok());
     }
 
     #[test]
