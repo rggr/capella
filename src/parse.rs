@@ -35,16 +35,16 @@ impl FromStr for MetricType {
 #[derive(Debug, PartialEq)]
 pub struct Metric {
     pub name: String,
-    pub value: i64,
+    pub value: f64,
     pub metric_type: MetricType,
-    pub sample_rate: Option<f32>,
+    pub sample_rate: Option<f64>,
 }
 
 impl Metric {
     pub fn new() -> Metric {
         Metric {
             name: String::new(),
-            value: 0,
+            value: 0.0,
             metric_type: MetricType::Meter,
             sample_rate: None,
         }
@@ -72,7 +72,7 @@ pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
     let mut metric = Metric::new();
     // These are required to match.
     let name = caps.name("name").unwrap().as_str();
-    let value = caps.name("val").unwrap().as_str().parse::<i64>().map_err(Error::from)?;
+    let value = caps.name("val").unwrap().as_str().parse::<f64>().map_err(Error::from)?;
     let metric_type = caps.name("type").unwrap().as_str();
 
     metric.name = String::from(name);
@@ -83,12 +83,12 @@ pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
     if let Some(sign) = caps.name("sign") {
         let s = sign.as_str();
         if s == "-" {
-            metric.value *= -1;
+            metric.value *= -1.0;
         }
     }
 
     if let Some(rate) = caps.name("rate") {
-        let r = rate.as_str().parse::<f32>().map_err(Error::from)?;
+        let r = rate.as_str().parse::<f64>().map_err(Error::from)?;
         metric.sample_rate = Some(r);
     }
 
@@ -106,7 +106,7 @@ mod tests {
 
         let mut m2 = Metric::new();
         m2.name = String::from("test");
-        m2.value = 1;
+        m2.value = 1.0;
 
         assert_eq!(m1, m2);
     }
@@ -124,7 +124,7 @@ mod tests {
 
         let mut m2 = Metric::new();
         m2.name = String::from("test");
-        m2.value = 1;
+        m2.value = 1.0;
         m2.metric_type = MetricType::Timer;
         m2.sample_rate = Some(0.1);
 
@@ -150,7 +150,7 @@ mod tests {
 
         let mut m2 = Metric::new();
         m2.name = String::from("test.nested.name");
-        m2.value = 1;
+        m2.value = 1.0;
         m2.metric_type = MetricType::Counter;
 
         assert_eq!(m1, m2);

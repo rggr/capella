@@ -64,10 +64,12 @@ pub fn start_udp_server(cache: &mut CapellaCache) {
         if v.1.len() == 0 {
             cache.bad_metric_increase();
         }
+
         println!("{:?}", v.1);
         for m in &v.1 {
             cache.add_metric(m);
         }
+
         let r: CapellaResult<SocketAddr> = Ok(v.0);
         r
     });

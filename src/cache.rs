@@ -10,8 +10,8 @@ use parse::{Metric, MetricType};
 // TODO: Can we do better than storing owned strings?
 #[derive(Debug, Default)]
 pub struct CapellaCache {
-    counters: HashMap<String, i64>,
-    gauges: HashMap<String, i64>,
+    counters: HashMap<String, f64>,
+    gauges: HashMap<String, f64>,
     metrics_seen: u64,
     bad_metrics: u64,
 }
@@ -23,7 +23,10 @@ impl CapellaCache {
 
         match metric.metric_type {
             MetricType::Counter => {
-                let c = self.counters.entry(metric.name.clone()).or_insert(0);
+                let c = self.counters.entry(metric.name.clone()).or_insert(0.0);
+                if let Some(rate) = metric.sample_rate {
+                    *c += metric.value * rate;
+                }
                 *c += metric.value;
             },
             MetricType::Gauge => {
