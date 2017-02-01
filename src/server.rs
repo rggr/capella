@@ -7,7 +7,7 @@ use std::net::SocketAddr;
 use std::rc::Rc;
 use std::time::Duration;
 
-use futures::{Future, Stream, Sink};
+use futures::{Future, Stream};
 
 use tokio_core::net::{UdpCodec, UdpSocket};
 use tokio_core::reactor::Core;
@@ -61,7 +61,7 @@ pub fn start_udp_server() {
     let addr: SocketAddr = "127.0.0.1:8125".parse().unwrap();
     let s = UdpSocket::bind(&addr, &handle).unwrap();
 
-    let (sink, stream) = s.framed(StatsCodec).split();
+    let (_, stream) = s.framed(StatsCodec).split();
 
     // This sets up the purge timer utilizing the event loop.
     let t = Timer::default().interval(Duration::new(5, 0));
@@ -73,23 +73,20 @@ pub fn start_udp_server() {
     });
 
     // This is the event loop stream in which all values are parsed.
-    // TODO: Investigate why I can't figure out how to chain functions to catch the error case.
-    use error::CapellaResult;
-    let events = stream.then(|res| {
-        let v = res.unwrap_or(("0.0.0.0:8125".parse().unwrap(), vec![]));
-        if v.1.len() == 0 {
+    let events = stream.for_each(|(_, metrics)| {
+        if metrics.len() == 0 {
             cache.borrow_mut().bad_metric_increase();
         }
 
-        println!("{:?}", v.1);
-        for m in &v.1 {
+        for m in &metrics {
             cache.borrow_mut().add_metric(m);
         }
 
-        let r: CapellaResult<SocketAddr> = Ok(v.0);
-        r
+        Ok(())
+    }).map_err(|e| {
+        io::Error::new(io::ErrorKind::Other, e.description())
     });
-    let f = sink.send_all(events).join(future_t);
+    let f = events.join(future_t);
 
     drop(core.run(f));
 }
