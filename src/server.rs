@@ -1,12 +1,18 @@
 //! The server module defines the codec used for parsing stats in capella.
 
 use std::io;
+use std::cell::RefCell;
+use std::error::Error;
 use std::net::SocketAddr;
+use std::rc::Rc;
+use std::time::Duration;
 
-use futures::{Stream, Sink};
+use futures::{Future, Stream, Sink};
 
 use tokio_core::net::{UdpCodec, UdpSocket};
 use tokio_core::reactor::Core;
+
+use tokio_timer::Timer;
 
 use cache::CapellaCache;
 
@@ -48,7 +54,8 @@ impl UdpCodec for StatsCodec {
 }
 
 // TODO: This will need to allow for configuration.
-pub fn start_udp_server(cache: &mut CapellaCache) {
+pub fn start_udp_server() {
+    let cache = Rc::new(RefCell::new(CapellaCache::default()));
     let mut core = Core::new().unwrap();
     let handle = core.handle();
     let addr: SocketAddr = "127.0.0.1:8125".parse().unwrap();
@@ -56,24 +63,33 @@ pub fn start_udp_server(cache: &mut CapellaCache) {
 
     let (sink, stream) = s.framed(StatsCodec).split();
 
+    // This sets up the purge timer utilizing the event loop.
+    let t = Timer::default().interval(Duration::new(5, 0));
+    let future_t = t.for_each(|()| {
+        cache.borrow_mut().purge_metrics();
+        Ok(())
+    }).map_err(|e| {
+        io::Error::new(io::ErrorKind::Other, e.description())
+    });
+
     // This is the event loop stream in which all values are parsed.
     // TODO: Investigate why I can't figure out how to chain functions to catch the error case.
     use error::CapellaResult;
     let events = stream.then(|res| {
         let v = res.unwrap_or(("0.0.0.0:8125".parse().unwrap(), vec![]));
         if v.1.len() == 0 {
-            cache.bad_metric_increase();
+            cache.borrow_mut().bad_metric_increase();
         }
 
         println!("{:?}", v.1);
         for m in &v.1 {
-            cache.add_metric(m);
+            cache.borrow_mut().add_metric(m);
         }
 
         let r: CapellaResult<SocketAddr> = Ok(v.0);
         r
     });
-    let f = sink.send_all(events);
+    let f = sink.send_all(events).join(future_t);
 
     drop(core.run(f));
 }

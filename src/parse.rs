@@ -55,11 +55,11 @@ impl Metric {
 pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
     lazy_static! {
         static ref PATTERN: Regex = Regex::new(r"(?x)
-            (?P<name>[\w\.]+):
+            \A(?P<name>[\w\.]+):
             ((?P<sign>\-|\+))?
             (?P<val>([0-9]*[.])?[0-9]+)
             \|(?P<type>\w+)
-            (\|@(?P<rate>\d+\.\d+))?").unwrap();
+            (\|@(?P<rate>\d+\.\d+))?\z").unwrap();
     }
 
     if let Ok(val) = str::from_utf8(packet) {

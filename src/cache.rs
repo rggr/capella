@@ -41,4 +41,10 @@ impl CapellaCache {
     pub fn bad_metric_increase(&mut self) {
         self.bad_metrics += 1;
     }
+
+    /// Purge the metrics to the specified backend.
+    // TODO: This needs to be generic with a trait backend.
+    pub fn purge_metrics(&mut self) {
+        println!("{:?}", self);
+    }
 }
