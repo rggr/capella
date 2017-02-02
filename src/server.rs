@@ -14,6 +14,8 @@ use tokio_core::reactor::Core;
 
 use tokio_timer::Timer;
 
+use backend::Backend;
+
 use cache::CapellaCache;
 
 use parse::{self, Metric};
@@ -54,7 +56,7 @@ impl UdpCodec for StatsCodec {
 }
 
 // TODO: This will need to allow for configuration.
-pub fn start_udp_server() {
+pub fn start_udp_server<B: Backend>(backend: B) {
     let cache = Rc::new(RefCell::new(CapellaCache::default()));
     let mut core = Core::new().unwrap();
     let handle = core.handle();
@@ -66,7 +68,7 @@ pub fn start_udp_server() {
     // This sets up the purge timer utilizing the event loop.
     let t = Timer::default().interval(Duration::new(5, 0));
     let future_t = t.for_each(|()| {
-        cache.borrow_mut().purge_metrics();
+        backend.purge_metrics(&mut cache.borrow_mut());
         Ok(())
     }).map_err(|e| {
         io::Error::new(io::ErrorKind::Other, e.description())
