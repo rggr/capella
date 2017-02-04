@@ -1,7 +1,7 @@
 //! The cache module dictates how metrics will be buffered before being sent to the
 //! corresponding backend.
 
-use std::collections::HashMap;
+use std::collections::{hash_map, HashMap};
 
 use parse::{Metric, MetricType};
 
@@ -40,5 +40,15 @@ impl CapellaCache {
     #[inline]
     pub fn bad_metric_increase(&mut self) {
         self.bad_metrics += 1;
+    }
+
+    /// Return an iterator over the counters.
+    pub fn counters_iter(&self) -> hash_map::Iter<String, f64> {
+        self.counters.iter()
+    }
+
+    /// Return an iterator over the gauges.
+    pub fn gauges_iter(&self) -> hash_map::Iter<String, f64> {
+        self.gauges.iter()
     }
 }
