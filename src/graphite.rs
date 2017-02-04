@@ -1,6 +1,7 @@
 //! The graphite module is the default backend for capella.
 
 use std::io::{self, Write};
+// TODO: Is this needed?
 use std::fmt::Write as FmtWrite;
 use std::net::{SocketAddr, ToSocketAddrs};
 
@@ -39,6 +40,7 @@ impl Backend for Graphite {
         let unix_time = Local::now().timestamp();
         let mut buffer = String::new();
 
+        // TODO: Need to do this more efficiently.
         for (k, v) in cache.counters_iter() {
             write!(buffer, "{} {} {}\n", k, v, unix_time);
         }
@@ -49,6 +51,7 @@ impl Backend for Graphite {
         println!("{}", buffer);
 
         let send = TcpStream::connect(&self.addr, &handle).and_then(|mut out| {
+            // TODO: Is this safe to call? Is it async?
             out.write_all(buffer.as_bytes());
             Ok(())
         });
