@@ -51,4 +51,9 @@ impl CapellaCache {
     pub fn gauges_iter(&self) -> hash_map::Iter<String, f64> {
         self.gauges.iter()
     }
+
+    /// Clear the counter and timer data.
+    pub fn reset(&mut self) {
+        self.counters.clear();
+    }
 }

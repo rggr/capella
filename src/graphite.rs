@@ -1,8 +1,6 @@
 //! The graphite module is the default backend for capella.
 
 use std::io::{self, Write};
-// TODO: Is this needed?
-use std::fmt::Write as FmtWrite;
 use std::net::{SocketAddr, ToSocketAddrs};
 
 use chrono::offset::local::Local;
@@ -29,10 +27,22 @@ impl Graphite {
             addr: addr.to_socket_addrs()?.next().unwrap(),
         })
     }
+
+    // Construct a string for the graphite new line API.
+    fn make_metric_string(&self, name: &str, value: &f64, time: i64) -> String {
+        let mut s = String::new();
+        s.push_str(name);
+        s.push_str(" ");
+        s.push_str(&value.to_string());
+        s.push_str(" ");
+        s.push_str(&time.to_string());
+        s.push_str("\n");
+
+        s
+    }
 }
 
 impl Backend for Graphite {
-    // TODO: Clear the cache?
     fn purge_metrics(&self, cache: &mut CapellaCache) {
         let mut core = Core::new().unwrap();
         let handle = core.handle();
@@ -40,21 +50,23 @@ impl Backend for Graphite {
         let unix_time = Local::now().timestamp();
         let mut buffer = String::new();
 
-        // TODO: Need to do this more efficiently.
         for (k, v) in cache.counters_iter() {
-            write!(buffer, "{} {} {}\n", k, v, unix_time);
+            let metric_str = self.make_metric_string(k, v, unix_time);
+            buffer.push_str(&metric_str);
         }
 
         for (k, v) in cache.gauges_iter() {
-            write!(buffer, "{} {} {}\n", k, v, unix_time);
+            let metric_str = self.make_metric_string(k, v, unix_time);
+            buffer.push_str(&metric_str);
         }
-        println!("{}", buffer);
 
         let send = TcpStream::connect(&self.addr, &handle).and_then(|mut out| {
             // TODO: Is this safe to call? Is it async?
-            out.write_all(buffer.as_bytes());
+            out.write_all(buffer.as_bytes())?;
             Ok(())
         });
         drop(core.run(send));
+
+        cache.reset();
     }
 }
