@@ -49,6 +49,7 @@ impl Backend for Graphite {
 
         let unix_time = Local::now().timestamp();
         let mut buffer = String::new();
+        cache.make_timer_stats();
 
         for (k, v) in cache.counters_iter() {
             let metric_str = self.make_metric_string(k, v, unix_time);
@@ -56,6 +57,11 @@ impl Backend for Graphite {
         }
 
         for (k, v) in cache.gauges_iter() {
+            let metric_str = self.make_metric_string(k, v, unix_time);
+            buffer.push_str(&metric_str);
+        }
+
+        for (k, v) in cache.timer_data_iter() {
             let metric_str = self.make_metric_string(k, v, unix_time);
             buffer.push_str(&metric_str);
         }

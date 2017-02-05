@@ -12,6 +12,8 @@ use parse::{Metric, MetricType};
 pub struct CapellaCache {
     counters: HashMap<String, f64>,
     gauges: HashMap<String, f64>,
+    timers: HashMap<String, Vec<f64>>,
+    timer_data: HashMap<String, f64>,
     metrics_seen: u64,
     bad_metrics: u64,
 }
@@ -31,6 +33,10 @@ impl CapellaCache {
             },
             MetricType::Gauge => {
                 self.gauges.insert(metric.name.clone(), metric.value);
+            },
+            MetricType::Timer => {
+                let values = self.timers.entry(metric.name.clone()).or_insert(vec![]);
+                values.push(metric.value);
             },
             _ => unimplemented!(),
         }
@@ -52,8 +58,55 @@ impl CapellaCache {
         self.gauges.iter()
     }
 
+    /// Return an iterator over the timer data.
+    pub fn timer_data_iter(&self) -> hash_map::Iter<String, f64> {
+        self.timer_data.iter()
+    }
+
     /// Clear the counter and timer data.
     pub fn reset(&mut self) {
         self.counters.clear();
+        self.timers.clear();
+        self.timer_data.clear();
     }
+
+    /// Make timer data statistics.
+    pub fn make_timer_stats(&mut self) {
+        let mut timer_data: HashMap<String, f64> = HashMap::new();
+
+        for (metric, times) in self.timers.iter_mut() {
+            // Sort the metrics for calculating statistics.
+            times.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+            let count = times.len() as f64;
+            let sum: f64 = times.iter().sum();
+            let average = sum / count;
+            let std_dev = get_std_dev(&times, average, count);
+            let median = get_percentile(&times, count, 0.5);
+            let upper_ninety_five = get_percentile(&times, count, 0.95);
+
+            let key = metric.as_str();
+            timer_data.insert(key.to_owned() + ".min", times[0]);
+            timer_data.insert(key.to_owned() + ".max", times[times.len() - 1]);
+            timer_data.insert(key.to_owned() + ".count", count);
+            timer_data.insert(key.to_owned() + ".average", average);
+            timer_data.insert(key.to_owned() + ".std_dev", std_dev);
+            timer_data.insert(key.to_owned() + ".median", median);
+            timer_data.insert(key.to_owned() + ".upper_95", upper_ninety_five);
+        }
+
+        self.timer_data = timer_data;
+    }
+}
+
+fn get_percentile(values: &[f64], count: f64, percent: f64) -> f64 {
+    let index = (count * percent) as usize;
+    if values.len() % 2 == 0 {
+        return (values[index + 1] + values[index]) / 2.0;
+    }
+    values[index]
+}
+
+fn get_std_dev(values: &[f64], average: f64, count: f64) -> f64 {
+    values.iter().map(|v| (v - average).powi(2)).sum::<f64>() / count
 }
