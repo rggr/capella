@@ -104,6 +104,24 @@ mod tests {
     use super::{Metric, MetricType, parse_metric};
 
     #[test]
+    fn bad_parse_cases() {
+        let cases = vec![
+            "test::1|c",
+            "",
+            "test|1:",
+            "test:1|c@1",
+            ":1.0|c",
+            "test|1",
+            "test:1|a",
+            "test:c|c",
+            "test:1|ms|0.3"
+        ];
+        for c in &cases {
+            assert!(parse_metric(c.as_bytes()).is_err());
+        }
+    }
+
+    #[test]
     fn good_simple_meter() {
         let packet = b"test:1|m";
         let m1 = parse_metric(packet).unwrap();
@@ -113,12 +131,6 @@ mod tests {
         m2.value = 1.0;
 
         assert_eq!(m1, m2);
-    }
-
-    #[test]
-    fn bad_parse_double_colon() {
-        let packet = b"test::1|c";
-        assert!(parse_metric(packet).is_err());
     }
 
     #[test]
@@ -139,12 +151,6 @@ mod tests {
     fn good_parse_float_value() {
         let packet = b"test:1.0|g";
         assert!(parse_metric(packet).is_ok());
-    }
-
-    #[test]
-    fn bad_parse_unknown_metric_type() {
-        let packet = b"test:1|a";
-        assert!(parse_metric(packet).is_err());
     }
 
     #[test]
