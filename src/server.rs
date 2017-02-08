@@ -1,6 +1,7 @@
 //! The server module defines the codec used for parsing stats in capella.
 
 use std::io;
+use std::env;
 use std::cell::RefCell;
 use std::error::Error;
 use std::net::SocketAddr;
@@ -55,19 +56,20 @@ impl UdpCodec for StatsCodec {
     }
 }
 
-// TODO: This will need to allow for configuration.
 pub fn start_udp_server<B: Backend>(backend: B) {
     let cache = Rc::new(RefCell::new(CapellaCache::default()));
     let mut core = Core::new().unwrap();
     let handle = core.handle();
-    let addr: SocketAddr = "127.0.0.1:8125".parse().unwrap();
+    let capella_addr = env::var("CAPELLA_LISTENER").unwrap();
+    let addr: SocketAddr = capella_addr.parse().unwrap();
     let s = UdpSocket::bind(&addr, &handle).unwrap();
 
     let (_, stream) = s.framed(StatsCodec).split();
 
     // This sets up the purge timer utilizing the event loop.
-    let t = Timer::default().interval(Duration::new(5, 0));
-    let future_t = t.for_each(|()| {
+    let flush_duration = env::var("CAPELLA_FLUSH_DURATION").unwrap().parse::<u64>().unwrap();
+    let timer = Timer::default().interval(Duration::new(flush_duration, 0));
+    let future_t = timer.for_each(|()| {
         backend.purge_metrics(&mut cache.borrow_mut());
         Ok(())
     }).map_err(|e| {

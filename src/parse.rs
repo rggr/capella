@@ -2,6 +2,7 @@
 
 use regex::Regex;
 
+use std::rc::Rc;
 use std::str::{self, FromStr};
 
 use error::{Error, CapellaResult};
@@ -34,7 +35,7 @@ impl FromStr for MetricType {
 /// A Metric defines a published client event.
 #[derive(Debug, PartialEq)]
 pub struct Metric {
-    pub name: String,
+    pub name: Rc<String>,
     pub value: f64,
     pub metric_type: MetricType,
     pub sample_rate: Option<f64>,
@@ -43,7 +44,7 @@ pub struct Metric {
 impl Metric {
     pub fn new() -> Metric {
         Metric {
-            name: String::new(),
+            name: Rc::new(String::new()),
             value: 0.0,
             metric_type: MetricType::Meter,
             sample_rate: None,
@@ -79,7 +80,7 @@ pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
     let value = caps.name("val").unwrap().as_str().parse::<f64>().map_err(Error::from)?;
     let metric_type = caps.name("type").unwrap().as_str();
 
-    metric.name = String::from(name);
+    metric.name = Rc::new(String::from(name));
     metric.value = value;
     metric.metric_type = metric_type.parse::<MetricType>()?;
 
@@ -101,6 +102,8 @@ pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
 
 #[cfg(test)]
 mod tests {
+    use std::rc::Rc;
+
     use super::{Metric, MetricType, parse_metric};
 
     #[test]
@@ -127,7 +130,7 @@ mod tests {
         let m1 = parse_metric(packet).unwrap();
 
         let mut m2 = Metric::new();
-        m2.name = String::from("test");
+        m2.name = Rc::new(String::from("test"));
         m2.value = 1.0;
 
         assert_eq!(m1, m2);
@@ -139,7 +142,7 @@ mod tests {
         let m1 = parse_metric(packet).unwrap();
 
         let mut m2 = Metric::new();
-        m2.name = String::from("test");
+        m2.name = Rc::new(String::from("test"));
         m2.value = 1.0;
         m2.metric_type = MetricType::Timer;
         m2.sample_rate = Some(0.1);
@@ -159,7 +162,7 @@ mod tests {
         let m1 = parse_metric(packet).unwrap();
 
         let mut m2 = Metric::new();
-        m2.name = String::from("test.nested.name");
+        m2.name = Rc::new(String::from("test.nested.name"));
         m2.value = 1.0;
         m2.metric_type = MetricType::Counter;
 

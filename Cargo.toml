@@ -4,7 +4,8 @@ version = "0.1.0"
 authors = ["Garrett Squire <garrettsquire@gmail.com>"]
 
 [dependencies]
-chrono = "0.2"
+chrono = "0.3"
+dotenv = "0.8"
 futures = "0.1"
 lazy_static = "0.2"
 regex = "0.2"
