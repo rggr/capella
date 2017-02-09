@@ -1,6 +1,8 @@
 # capella
 capella is an aysnchronous StatsD server written in Rust.
 
+[![Build Status](https://travis-ci.org/rggr/capella.svg?branch=master)](https://travis-ci.org/rggr/capella)
+
 ### Building and Testing
 capella uses [Cargo](https://github.com/rust-lang/cargo) to build and test.
 
