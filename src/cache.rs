@@ -2,17 +2,17 @@
 //! corresponding backend.
 
 use std::collections::{hash_map, HashMap};
+use std::rc::Rc;
 
 use parse::{Metric, MetricType};
 
 /// `CapellaCache` is the bucketing mechanism used by capella to buffer metrics before sending to
 /// the backend.
-// TODO: Can we do better than storing owned strings?
 #[derive(Debug, Default)]
 pub struct CapellaCache {
-    counters: HashMap<String, f64>,
-    gauges: HashMap<String, f64>,
-    timers: HashMap<String, Vec<f64>>,
+    counters: HashMap<Rc<String>, f64>,
+    gauges: HashMap<Rc<String>, f64>,
+    timers: HashMap<Rc<String>, Vec<f64>>,
     timer_data: HashMap<String, f64>,
     metrics_seen: u64,
     bad_metrics: u64,
@@ -49,12 +49,12 @@ impl CapellaCache {
     }
 
     /// Return an iterator over the counters.
-    pub fn counters_iter(&self) -> hash_map::Iter<String, f64> {
+    pub fn counters_iter(&self) -> hash_map::Iter<Rc<String>, f64> {
         self.counters.iter()
     }
 
     /// Return an iterator over the gauges.
-    pub fn gauges_iter(&self) -> hash_map::Iter<String, f64> {
+    pub fn gauges_iter(&self) -> hash_map::Iter<Rc<String>, f64> {
         self.gauges.iter()
     }
 
@@ -85,14 +85,13 @@ impl CapellaCache {
             let median = get_percentile(&times, count, 0.5);
             let upper_ninety_five = get_percentile(&times, count, 0.95);
 
-            let key = metric.as_str();
-            timer_data.insert(key.to_owned() + ".min", times[0]);
-            timer_data.insert(key.to_owned() + ".max", times[times.len() - 1]);
-            timer_data.insert(key.to_owned() + ".count", count);
-            timer_data.insert(key.to_owned() + ".average", average);
-            timer_data.insert(key.to_owned() + ".std_dev", std_dev);
-            timer_data.insert(key.to_owned() + ".median", median);
-            timer_data.insert(key.to_owned() + ".upper_95", upper_ninety_five);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".min", times[0]);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".max", times[times.len() - 1]);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".count", count);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".average", average);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".std_dev", std_dev);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".median", median);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".upper_95", upper_ninety_five);
         }
 
         self.timer_data = timer_data;
@@ -102,7 +101,7 @@ impl CapellaCache {
 fn get_percentile(values: &[f64], count: f64, percent: f64) -> f64 {
     let index = (count * percent) as usize;
     if values.len() % 2 == 0 {
-        return (values[index + 1] + values[index]) / 2.0;
+        return (values[index - 1] + values[index]) / 2.0;
     }
     values[index]
 }
