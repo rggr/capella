@@ -21,7 +21,7 @@ use cache::CapellaCache;
 
 use parse::{self, Metric};
 
-/// StatsCodec defines the UDP parser used to accept packets and returns a new
+/// `StatsCodec` defines the UDP parser used to accept packets and returns a new
 /// statistic or an error.
 pub struct StatsCodec;
 
@@ -78,8 +78,8 @@ pub fn start_udp_server<B: Backend>(backend: B) {
 
     // This is the event loop stream in which all values are parsed.
     let events = stream.for_each(|(_, metrics)| {
-        if metrics.len() == 0 {
-            cache.borrow_mut().bad_metric_increase();
+        if metrics.is_empty() {
+            cache.borrow_mut().bad_metric_count_increase();
         }
 
         for m in &metrics {

@@ -7,7 +7,7 @@ use std::str::{self, FromStr};
 
 use error::{Error, CapellaResult};
 
-/// MetricType defines what kind of metric was parsed from a client.
+/// `MetricType` defines what kind of metric was parsed from a client.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MetricType {
     Counter,
@@ -32,7 +32,7 @@ impl FromStr for MetricType {
     }
 }
 
-/// A Metric defines a published client event.
+/// A `Metric` defines a published client event.
 #[derive(Debug, PartialEq)]
 pub struct Metric {
     pub name: Rc<String>,
@@ -52,7 +52,7 @@ impl Metric {
     }
 }
 
-/// The parse_metric function trys to break down a single UDP packet into a single metric.
+/// The `parse_metric` function trys to break down a single UDP packet into a single metric.
 pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
     lazy_static! {
         static ref PATTERN: Regex = Regex::new(r"(?x)
