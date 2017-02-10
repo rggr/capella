@@ -1,6 +1,6 @@
 //! The graphite module is the default backend for capella.
 
-use std::io::{self, Write};
+use std::io;
 use std::net::{SocketAddr, ToSocketAddrs};
 
 use chrono::offset::local::Local;
@@ -32,13 +32,13 @@ impl Graphite {
     }
 
     // Construct a string for the graphite new line API.
-    fn make_metric_string(&self, name: &str, value: &f64, time: i64) -> String {
+    fn make_metric_string(&self, name: &str, value: &f64, time: &str) -> String {
         let mut s = String::new();
         s.push_str(name);
         s.push_str(" ");
         s.push_str(&value.to_string());
         s.push_str(" ");
-        s.push_str(&time.to_string());
+        s.push_str(time);
         s.push_str("\n");
 
         s
@@ -50,33 +50,31 @@ impl Backend for Graphite {
         let mut core = Core::new().unwrap();
         let handle = core.handle();
 
-        let unix_time = Local::now().timestamp();
+        let unix_time = Local::now().timestamp().to_string();
         let mut buffer = String::new();
         cache.make_timer_stats();
 
         for (k, v) in cache.counters_iter() {
-            let metric_str = self.make_metric_string(k, v, unix_time);
+            let metric_str = self.make_metric_string(k, v, &unix_time);
             buffer.push_str(&metric_str);
         }
 
         for (k, v) in cache.gauges_iter() {
-            let metric_str = self.make_metric_string(k, v, unix_time);
+            let metric_str = self.make_metric_string(k, v, &unix_time);
             buffer.push_str(&metric_str);
         }
 
         for (k, v) in cache.timer_data_iter() {
-            let metric_str = self.make_metric_string(k, v, unix_time);
+            let metric_str = self.make_metric_string(k, v, &unix_time);
             buffer.push_str(&metric_str);
         }
 
         // Add our total message and bad message counts.
-        buffer.push_str(&self.make_metric_string(CAPELLA_METRICS_TOTAL, &cache.total_metrics(), unix_time));
-        buffer.push_str(&self.make_metric_string(CAPELLA_BAD_METRICS_TOTAL, &cache.total_bad_metrics(), unix_time));
+        buffer.push_str(&self.make_metric_string(CAPELLA_METRICS_TOTAL, &cache.total_metrics(), &unix_time));
+        buffer.push_str(&self.make_metric_string(CAPELLA_BAD_METRICS_TOTAL, &cache.total_bad_metrics(), &unix_time));
 
-        let send = TcpStream::connect(&self.addr, &handle).and_then(|mut out| {
-            // TODO: Is this safe to call? Is it async?
-            out.write_all(buffer.as_bytes())?;
-            Ok(())
+        let send = TcpStream::connect(&self.addr, &handle).and_then(|out| {
+            ::tokio_core::io::write_all(out, buffer)
         });
         drop(core.run(send));
 

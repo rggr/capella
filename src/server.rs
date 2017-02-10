@@ -19,6 +19,8 @@ use backend::Backend;
 
 use cache::CapellaCache;
 
+use error::to_io_error;
+
 use parse::{self, Metric};
 
 /// `StatsCodec` defines the UDP parser used to accept packets and returns a new
@@ -36,14 +38,14 @@ impl UdpCodec for StatsCodec {
         if buf.contains(&b'\n') {
             // Based on the behavior of split, we need to filter out zero-length chunks.
             for m in buf.split(|c| *c == b'\n').filter(|chunk| chunk.len() > 0) {
-                let metric = parse::parse_metric(m)?;
+                let metric = parse::parse_metric(m).map_err(to_io_error)?;
                 metrics.push(metric);
             }
             return Ok((*addr, metrics));
         }
 
         // We only got one metric sent.
-        let metric = parse::parse_metric(buf)?;
+        let metric = parse::parse_metric(buf).map_err(to_io_error)?;
         metrics.push(metric);
 
         Ok((*addr, metrics))
@@ -56,6 +58,8 @@ impl UdpCodec for StatsCodec {
     }
 }
 
+/// This starts up the UDP server with the default backend being a graphite host.
+/// Other backends can be specified by modifying the main program.
 pub fn start_udp_server<B: Backend>(backend: B) {
     let cache = Rc::new(RefCell::new(CapellaCache::default()));
     let mut core = Core::new().unwrap();
