@@ -3,6 +3,12 @@ capella is an aysnchronous StatsD server written in Rust.
 
 [![Build Status](https://travis-ci.org/rggr/capella.svg?branch=master)](https://travis-ci.org/rggr/capella)
 
+## Documentation
+- [Supported Metrics](#supported-metrics)
+
+## Supported Metrics
+capella supports the four metrics that StatsD implements. They are counter, gauges, timers, and sets.
+
 ### Building and Testing
 capella uses [Cargo](https://github.com/rust-lang/cargo) to build and test.
 
