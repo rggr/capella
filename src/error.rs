@@ -44,9 +44,7 @@ impl From<ParseFloatError> for Error {
     }
 }
 
-// TODO: Should I be doing this for a library type?
-impl From<Error> for io::Error {
-    fn from(e: Error) -> io::Error {
-        io::Error::new(io::ErrorKind::Other, e.description())
-    }
+/// Map a capella `Error` to an `io::Error` for use in the server module.
+pub fn to_io_error(e: Error) -> io::Error {
+    io::Error::new(io::ErrorKind::Other, e.description())
 }
