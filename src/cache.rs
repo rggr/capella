@@ -1,7 +1,7 @@
 //! The cache module dictates how metrics will be buffered before being sent to the
 //! corresponding backend.
 
-use std::collections::{hash_map, HashMap};
+use std::collections::{hash_map, HashMap, HashSet};
 use std::rc::Rc;
 
 use parse::{Metric, MetricType};
@@ -13,6 +13,7 @@ pub struct CapellaCache {
     counters: HashMap<Rc<String>, f64>,
     gauges: HashMap<Rc<String>, f64>,
     timers: HashMap<Rc<String>, Vec<f64>>,
+    sets: HashMap<Rc<String>, HashSet<i64>>,
     timer_data: HashMap<String, f64>,
     metrics_seen: u64,
     bad_metrics: u64,
@@ -26,19 +27,19 @@ impl CapellaCache {
         match metric.metric_type {
             MetricType::Counter => {
                 let c = self.counters.entry(metric.name.clone()).or_insert(0.0);
-                if let Some(rate) = metric.sample_rate {
-                    *c += metric.value * rate;
-                }
-                *c += metric.value;
+                *c += metric.value * metric.sample_rate.unwrap_or(1.0);
             },
             MetricType::Gauge => {
                 self.gauges.insert(metric.name.clone(), metric.value);
             },
             MetricType::Timer => {
-                let values = self.timers.entry(metric.name.clone()).or_insert(vec![]);
-                values.push(metric.value);
+                let values = self.timers.entry(metric.name.clone()).or_insert(Vec::new());
+                values.push(metric.value * metric.sample_rate.unwrap_or(1.0));
             },
-            _ => unimplemented!(),
+            MetricType::Set => {
+                let values = self.sets.entry(metric.name.clone()).or_insert(HashSet::new());
+                values.insert(metric.value.round() as i64);
+            }
         }
     }
 
@@ -77,6 +78,11 @@ impl CapellaCache {
         self.gauges.iter()
     }
 
+    /// Return an iterator over the sets.
+    pub fn sets_iter(&self) -> hash_map::Iter<Rc<String>, HashSet<i64>> {
+        self.sets.iter()
+    }
+
     /// Return an iterator over the timer data.
     pub fn timer_data_iter(&self) -> hash_map::Iter<String, f64> {
         self.timer_data.iter()
@@ -85,6 +91,7 @@ impl CapellaCache {
     /// Clear the counter and timer data.
     pub fn reset(&mut self) {
         self.counters.clear();
+        self.sets.clear();
         self.timers.clear();
         self.timer_data.clear();
     }
