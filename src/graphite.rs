@@ -14,6 +14,9 @@ use backend::Backend;
 
 use cache::CapellaCache;
 
+const CAPELLA_METRICS_TOTAL: &'static str = "capella.total_metrics";
+const CAPELLA_BAD_METRICS_TOTAL: &'static str = "capella.bad_metrics";
+
 /// The backend to a graphite server.
 #[derive(Debug)]
 pub struct Graphite {
@@ -65,6 +68,10 @@ impl Backend for Graphite {
             let metric_str = self.make_metric_string(k, v, unix_time);
             buffer.push_str(&metric_str);
         }
+
+        // Add our total message and bad message counts.
+        buffer.push_str(&self.make_metric_string(CAPELLA_METRICS_TOTAL, &cache.total_metrics(), unix_time));
+        buffer.push_str(&self.make_metric_string(CAPELLA_BAD_METRICS_TOTAL, &cache.total_bad_metrics(), unix_time));
 
         let send = TcpStream::connect(&self.addr, &handle).and_then(|mut out| {
             // TODO: Is this safe to call? Is it async?
