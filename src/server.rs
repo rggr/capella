@@ -19,8 +19,6 @@ use backend::Backend;
 
 use cache::CapellaCache;
 
-use error::to_io_error;
-
 use parse::{self, Metric};
 
 /// `StatsCodec` defines the UDP parser used to accept packets and returns a new
@@ -38,15 +36,19 @@ impl UdpCodec for StatsCodec {
         if buf.contains(&b'\n') {
             // Based on the behavior of split, we need to filter out zero-length chunks.
             for m in buf.split(|c| *c == b'\n').filter(|chunk| chunk.len() > 0) {
-                let metric = parse::parse_metric(m).map_err(to_io_error)?;
-                metrics.push(metric);
+                let metric = parse::parse_metric(m);
+                if metric.is_ok() {
+                    metrics.push(metric.unwrap());
+                }
             }
             return Ok((*addr, metrics));
         }
 
         // We only got one metric sent.
-        let metric = parse::parse_metric(buf).map_err(to_io_error)?;
-        metrics.push(metric);
+        let metric = parse::parse_metric(buf);
+        if metric.is_ok() {
+            metrics.push(metric.unwrap());
+        }
 
         Ok((*addr, metrics))
     }
@@ -91,8 +93,6 @@ pub fn start_udp_server<B: Backend>(backend: B) {
         }
 
         Ok(())
-    }).map_err(|e| {
-        io::Error::new(io::ErrorKind::Other, e.description())
     });
     let f = events.join(future_t);
 

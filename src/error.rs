@@ -3,7 +3,6 @@
 
 use std::fmt;
 use std::error::Error as StdError;
-use std::io;
 use std::num::{ParseFloatError, ParseIntError};
 
 use self::Error::Parse;
@@ -42,9 +41,4 @@ impl From<ParseFloatError> for Error {
     fn from(_: ParseFloatError) -> Error {
         Error::Parse
     }
-}
-
-/// Map a capella `Error` to an `io::Error` for use in the server module.
-pub fn to_io_error(e: Error) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, e.description())
 }
