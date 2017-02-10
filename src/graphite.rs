@@ -16,6 +16,7 @@ use cache::CapellaCache;
 
 const CAPELLA_METRICS_TOTAL: &'static str = "capella.total_metrics";
 const CAPELLA_BAD_METRICS_TOTAL: &'static str = "capella.bad_metrics";
+const COUNT_SUFFIX: &'static str = ".count";
 
 /// The backend to a graphite server.
 #[derive(Debug)]
@@ -66,6 +67,13 @@ impl Backend for Graphite {
 
         for (k, v) in cache.timer_data_iter() {
             let metric_str = self.make_metric_string(k, v, &unix_time);
+            buffer.push_str(&metric_str);
+        }
+
+        for (k, v) in cache.sets_iter() {
+            let key = String::from(&*k.clone().as_str()) + COUNT_SUFFIX;
+            let value = v.len() as f64;
+            let metric_str = self.make_metric_string(&key, &value, &unix_time);
             buffer.push_str(&metric_str);
         }
 

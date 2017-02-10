@@ -12,8 +12,7 @@ use error::{Error, CapellaResult};
 pub enum MetricType {
     Counter,
     Gauge,
-    Histogram,
-    Meter,
+    Set,
     Timer,
 }
 
@@ -24,9 +23,8 @@ impl FromStr for MetricType {
         match s {
             "c" => Ok(MetricType::Counter),
             "g" => Ok(MetricType::Gauge),
-            "h" => Ok(MetricType::Histogram),
-            "m" => Ok(MetricType::Meter),
             "ms" => Ok(MetricType::Timer),
+            "s" => Ok(MetricType::Set),
             _ => Err(Error::Parse),
         }
     }
@@ -46,7 +44,7 @@ impl Metric {
         Metric {
             name: Rc::new(String::new()),
             value: 0.0,
-            metric_type: MetricType::Meter,
+            metric_type: MetricType::Counter,
             sample_rate: None,
         }
     }
@@ -125,8 +123,8 @@ mod tests {
     }
 
     #[test]
-    fn good_simple_meter() {
-        let packet = b"test:1|m";
+    fn good_simple_counter() {
+        let packet = b"test:1|c";
         let m1 = parse_metric(packet).unwrap();
 
         let mut m2 = Metric::new();
