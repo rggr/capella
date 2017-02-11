@@ -5,6 +5,7 @@ capella is an aysnchronous StatsD server written in Rust.
 
 ## Documentation
 - [Building and Testing](#building-and-testing)
+- [Configuration](#configuration)
 - [Supported Metrics](#supported-metrics)
 
 ## Building and Testing
@@ -16,6 +17,22 @@ cargo build --release
 
 # Running the unit tests.
 cargo test
+```
+
+## Configuration
+capella uses an environment variable based configuration file named `capella.env`. Currently the
+necessary configuration values needed are as follows:
+
+```sh
+# The connection string for the graphite host. It includes an IP address as well as a port.
+CAPELLA_GRAPHITE_CONNECTION=127.0.0.1:2003
+
+# The address and port on which capella should listen.
+CAPELLA_LISTENER=127.0.0.1:8125
+
+# The flushing duration defines how long capella buffers metrics before sending to graphite.
+# It is defined in seconds.
+CAPELLA_FLUSH_DURATION=10
 ```
 
 ## Supported Metrics
@@ -58,6 +75,8 @@ the following:
 - Standard Deviation
 - Median
 - 95th Percentile
+
+Timers also support sampling.
 
 ```sh
 timer:1.5|ms

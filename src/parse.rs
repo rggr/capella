@@ -83,9 +83,10 @@ pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
     metric.metric_type = metric_type.parse::<MetricType>()?;
 
     // Now see if there were optional values added in.
+    // Counters cannot be decremented, so only do so if the metric is not a counter.
     if let Some(sign) = caps.name("sign") {
         let s = sign.as_str();
-        if s == "-" {
+        if s == "-" && metric.metric_type != MetricType::Counter {
             metric.value *= -1.0;
         }
     }
