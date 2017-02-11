@@ -7,6 +7,7 @@ capella is an aysnchronous StatsD server written in Rust.
 - [Building and Testing](#building-and-testing)
 - [Configuration](#configuration)
 - [Supported Metrics](#supported-metrics)
+- [Future Plans](#future-plans)
 
 ## Building and Testing
 capella uses [Cargo](https://github.com/rust-lang/cargo) to build and test.
@@ -81,6 +82,13 @@ Timers also support sampling.
 ```sh
 timer:1.5|ms
 ```
+
+## Future Plans
+Currently capella is not nearly as configurable as the original StatsD. It may never be but
+support for the most used options will be added on an as-needed basis. capella will continue to add
+unit tests to increase code coverage and ensure that metrics handling is identical to how StatsD
+handles them. Please open issues to ask questions about adding features. We will gladly attend to
+any questions.
 
 ### Authors
 capella was started by [Garrett](https://github.com/gsquire) and [Ralph](https://github.com/deckarep).
