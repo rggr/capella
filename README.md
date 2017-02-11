@@ -4,12 +4,10 @@ capella is an aysnchronous StatsD server written in Rust.
 [![Build Status](https://travis-ci.org/rggr/capella.svg?branch=master)](https://travis-ci.org/rggr/capella)
 
 ## Documentation
+- [Building and Testing](#building-and-testing)
 - [Supported Metrics](#supported-metrics)
 
-## Supported Metrics
-capella supports the four metrics that StatsD implements. They are counter, gauges, timers, and sets.
-
-### Building and Testing
+## Building and Testing
 capella uses [Cargo](https://github.com/rust-lang/cargo) to build and test.
 
 ```sh
@@ -18,6 +16,51 @@ cargo build --release
 
 # Running the unit tests.
 cargo test
+```
+
+## Supported Metrics
+capella supports the four metrics that StatsD implements. They are counter, gauges, timers, and sets.
+
+#### Counters
+Counters represent metrics that can only increase. Counters can also have an associated sampling
+rate that tells capella that a metric is only being sent for a fraction of the time.
+
+```sh
+# This tells capella that the rate is only being sent once every half of the flush duration.
+counter:1|c|@0.5
+```
+
+#### Gauges
+Gauges are metrics that can fluctuate both negatively and postively. They are similar to a gauge
+in a car.
+
+```sh
+# This subtracts one from the current value for the "gauge" key.
+gauge:-1|g
+```
+
+#### Sets
+Sets are metrics that hold a unique collection of values. The metric derived by capella for this
+type is the cardinality of the set.
+
+```sh
+# Add a new value to the set which is only added if it doesn't exist.
+set:11|s
+```
+
+#### Timers
+Timers are unique in that many statistics are derived from them. Per flush duration, timers generate
+the following:
+- Minimum value
+- Maximum value
+- Count
+- Average
+- Standard Deviation
+- Median
+- 95th Percentile
+
+```sh
+timer:1.5|ms
 ```
 
 ### Authors
