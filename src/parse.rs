@@ -64,9 +64,11 @@ pub fn parse_metric(packet: &[u8]) -> CapellaResult<Metric> {
 
     if let Ok(val) = str::from_utf8(packet) {
         if !PATTERN.is_match(val) {
+            trace!("UDP packet did not match the pattern");
             return Err(Error::Parse);
         }
     } else {
+        trace!("UDP packet was invalid UTF-8");
         return Err(Error::Parse);
     }
 

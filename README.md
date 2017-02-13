@@ -21,8 +21,9 @@ cargo test
 ```
 
 ## Configuration
-capella uses an environment variable based configuration file named `capella.env`. Currently the
-necessary configuration values needed are as follows:
+capella uses an environment variable based configuration file named `capella.env`. capella expects
+this file to be in the same directory as the binary. Currently the necessary configuration values
+needed are as follows:
 
 ```sh
 # The connection string for the graphite host. It includes an IP address as well as a port.
@@ -34,6 +35,9 @@ CAPELLA_LISTENER=127.0.0.1:8125
 # The flushing duration defines how long capella buffers metrics before sending to graphite.
 # It is defined in seconds.
 CAPELLA_FLUSH_DURATION=10
+
+# Set the log level for the `env_logger` module.
+RUST_LOG=info
 ```
 
 ## Supported Metrics
