@@ -78,6 +78,7 @@ pub fn start_udp_server<B: Backend>(backend: B) {
     let timer = Timer::default().interval(Duration::new(flush_duration, 0));
     let future_t = timer.for_each(|()| {
         backend.purge_metrics(&mut cache.borrow_mut());
+        trace!("flushing metrics");
         Ok(())
     }).map_err(|e| {
         io::Error::new(io::ErrorKind::Other, e.description())
@@ -86,6 +87,7 @@ pub fn start_udp_server<B: Backend>(backend: B) {
     // This is the event loop stream in which all values are parsed.
     let events = stream.for_each(|(_, metrics)| {
         if metrics.is_empty() {
+            trace!("no valid metrics were sent");
             cache.borrow_mut().bad_metric_count_increase();
         }
 
