@@ -86,9 +86,8 @@ timer:1.5|ms
 ## Future Plans
 Currently capella is not nearly as configurable as the original StatsD. It may never be but
 support for the most used options will be added on an as-needed basis. capella will continue to add
-unit tests to increase code coverage and ensure that metrics handling is identical to how StatsD
-handles them. Please open issues to ask questions about adding features. We will gladly attend to
-any questions.
+unit tests to increase code coverage and ensure that metrics handling is identical to StatsD.
+Please open issues to ask questions about adding features or to point out bugs.
 
 ### Authors
 capella was started by [Garrett](https://github.com/gsquire) and [Ralph](https://github.com/deckarep).
