@@ -1,5 +1,6 @@
 //! The cache module dictates how metrics will be buffered before being sent to the
 //! corresponding backend.
+#![deny(missing_docs)]
 
 use std::collections::{hash_map, HashMap, HashSet};
 use std::rc::Rc;

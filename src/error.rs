@@ -1,5 +1,6 @@
 //! The error module defines custom errors as well as the appropriate conversions needed for
 //! capella.
+#![deny(missing_docs)]
 
 use std::fmt;
 use std::error::Error as StdError;

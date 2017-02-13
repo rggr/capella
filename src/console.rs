@@ -1,4 +1,5 @@
 //! The console module is used mostly for testing purposes.
+#![deny(missing_docs)]
 
 use backend::Backend;
 

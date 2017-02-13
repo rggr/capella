@@ -1,5 +1,6 @@
 //! The backend module defines the trait that a backend must implement in order
 //! to be forwarded stats from capella.
+#![deny(missing_docs)]
 
 use cache::CapellaCache;
 

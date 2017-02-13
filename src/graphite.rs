@@ -1,4 +1,5 @@
 //! The graphite module is the default backend for capella.
+#![deny(missing_docs)]
 
 use std::io;
 use std::net::{SocketAddr, ToSocketAddrs};

@@ -1,4 +1,5 @@
 //! The server module defines the codec used for parsing stats in capella.
+#![deny(missing_docs)]
 
 use std::io;
 use std::env;

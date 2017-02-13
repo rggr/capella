@@ -1,4 +1,5 @@
 //! The parse module is responsible for parsing events published by clients.
+#![deny(missing_docs)]
 
 use regex::Regex;
 
