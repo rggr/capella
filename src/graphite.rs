@@ -28,9 +28,7 @@ pub struct Graphite {
 impl Graphite {
     /// Construct a new graphite instance with a given address.
     pub fn new<A: ToSocketAddrs>(addr: A) -> io::Result<Graphite> {
-        Ok(Graphite {
-            addr: addr.to_socket_addrs()?.next().unwrap(),
-        })
+        Ok(Graphite { addr: addr.to_socket_addrs()?.next().unwrap() })
     }
 
     // Construct a string for the graphite new line API.
@@ -79,12 +77,14 @@ impl Backend for Graphite {
         }
 
         // Add our total message and bad message counts.
-        buffer.push_str(&self.make_metric_string(CAPELLA_METRICS_TOTAL, &cache.total_metrics(), &unix_time));
-        buffer.push_str(&self.make_metric_string(CAPELLA_BAD_METRICS_TOTAL, &cache.total_bad_metrics(), &unix_time));
+        buffer.push_str(&self.make_metric_string(CAPELLA_METRICS_TOTAL,
+                                                 &cache.total_metrics(), &unix_time));
+        buffer.push_str(&self.make_metric_string(CAPELLA_BAD_METRICS_TOTAL,
+                                                 &cache.total_bad_metrics(),
+                                                 &unix_time));
 
-        let send = TcpStream::connect(&self.addr, &handle).and_then(|out| {
-            ::tokio_core::io::write_all(out, buffer)
-        });
+        let send = TcpStream::connect(&self.addr, &handle)
+            .and_then(|out| ::tokio_core::io::write_all(out, buffer));
         drop(core.run(send));
 
         cache.reset();

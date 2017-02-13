@@ -108,17 +108,15 @@ mod tests {
 
     #[test]
     fn bad_parse_cases() {
-        let cases = vec![
-            "test::1|c",
-            "",
-            "test|1:",
-            "test:1|c@1",
-            ":1.0|c",
-            "test|1",
-            "test:1|a",
-            "test:c|c",
-            "test:1|ms|0.3"
-        ];
+        let cases = vec!["test::1|c",
+                         "",
+                         "test|1:",
+                         "test:1|c@1",
+                         ":1.0|c",
+                         "test|1",
+                         "test:1|a",
+                         "test:c|c",
+                         "test:1|ms|0.3"];
         for c in &cases {
             assert!(parse_metric(c.as_bytes()).is_err());
         }

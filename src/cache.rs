@@ -29,14 +29,14 @@ impl CapellaCache {
             MetricType::Counter => {
                 let c = self.counters.entry(metric.name.clone()).or_insert(0.0);
                 *c += metric.value * metric.sample_rate.unwrap_or(1.0);
-            },
+            }
             MetricType::Gauge => {
                 self.gauges.insert(metric.name.clone(), metric.value);
-            },
+            }
             MetricType::Timer => {
                 let values = self.timers.entry(metric.name.clone()).or_insert(Vec::new());
                 values.push(metric.value * metric.sample_rate.unwrap_or(1.0));
-            },
+            }
             MetricType::Set => {
                 let values = self.sets.entry(metric.name.clone()).or_insert(HashSet::new());
                 values.insert(metric.value.round() as i64);
@@ -113,12 +113,16 @@ impl CapellaCache {
             let upper_ninety_five = get_percentile(times, count, 0.95);
 
             timer_data.insert(String::from(&*metric.clone().as_str()) + ".min", times[0]);
-            timer_data.insert(String::from(&*metric.clone().as_str()) + ".max", times[times.len() - 1]);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".max",
+                              times[times.len() - 1]);
             timer_data.insert(String::from(&*metric.clone().as_str()) + ".count", count);
-            timer_data.insert(String::from(&*metric.clone().as_str()) + ".average", average);
-            timer_data.insert(String::from(&*metric.clone().as_str()) + ".std_dev", std_dev);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".average",
+                              average);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".std_dev",
+                              std_dev);
             timer_data.insert(String::from(&*metric.clone().as_str()) + ".median", median);
-            timer_data.insert(String::from(&*metric.clone().as_str()) + ".upper_95", upper_ninety_five);
+            timer_data.insert(String::from(&*metric.clone().as_str()) + ".upper_95",
+                              upper_ninety_five);
         }
 
         self.timer_data = timer_data;

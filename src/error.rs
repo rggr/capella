@@ -13,7 +13,7 @@ pub type CapellaResult<T> = Result<T, Error>;
 /// `Error` is used for server side errors that may occur.
 #[derive(Debug)]
 pub enum Error {
-    Parse
+    Parse,
 }
 
 impl StdError for Error {
