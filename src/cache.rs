@@ -95,6 +95,8 @@ impl CapellaCache {
         self.sets.clear();
         self.timers.clear();
         self.timer_data.clear();
+        self.metrics_seen = 0;
+        self.bad_metrics = 0;
     }
 
     /// Make timer data statistics.

@@ -12,5 +12,6 @@ pub struct Console;
 impl Backend for Console {
     fn purge_metrics(&self, cache: &mut CapellaCache) {
         println!("{:?}", cache);
+        cache.reset();
     }
 }
