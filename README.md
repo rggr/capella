@@ -10,9 +10,13 @@ capella is an aysnchronous StatsD server written in Rust.
 - [Future Plans](#future-plans)
 
 ## Building and Testing
-capella uses [Cargo](https://github.com/rust-lang/cargo) to build and test.
+capella uses [Cargo](https://github.com/rust-lang/cargo) to build and test. You can also install
+it directly from the [Crates](https://crates.io) website.
 
 ```sh
+# Install from crates.io.
+cargo install capella
+
 # Building capella with optimizations.
 cargo build --release
 

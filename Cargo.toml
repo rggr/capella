@@ -2,6 +2,11 @@
 name = "capella"
 version = "0.1.0"
 authors = ["Garrett Squire <garrettsquire@gmail.com>"]
+description = "An asynchronous StatsD clone"
+keywords = ["async", "metrics"]
+repository = "https://github.com/rggr/capella"
+documentation = "https://docs.rs/capella"
+license = "MIT"
 
 [dependencies]
 chrono = "0.3"
