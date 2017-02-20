@@ -1,5 +1,5 @@
 # capella
-capella is an aysnchronous StatsD server written in Rust.
+[capella](https://en.wikipedia.org/wiki/Capella) is an aysnchronous StatsD server written in Rust.
 
 ![galaxy](galaxy.jpg)
 
