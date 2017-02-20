@@ -11,9 +11,16 @@ use error::{Error, CapellaResult};
 /// `MetricType` defines what kind of metric was parsed from a client.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MetricType {
+    /// A counter type only increases.
     Counter,
+
+    /// A gauge can fluctuate.
     Gauge,
+
+    /// A set type is used to count unique items.
     Set,
+
+    /// A timer can collect different timing events over a flush duration.
     Timer,
 }
 
@@ -34,13 +41,21 @@ impl FromStr for MetricType {
 /// A `Metric` defines a published client event.
 #[derive(Debug, PartialEq)]
 pub struct Metric {
+    /// The name of the metric.
     pub name: Rc<String>,
+
+    /// The float value of a metric.
     pub value: f64,
+
+    /// The type of metric that was sent.
     pub metric_type: MetricType,
+
+    /// An optional sample rate used in some calculations.
     pub sample_rate: Option<f64>,
 }
 
 impl Metric {
+    /// Create a new metric.
     pub fn new() -> Metric {
         Metric {
             name: Rc::new(String::new()),

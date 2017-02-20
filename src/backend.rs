@@ -4,6 +4,7 @@
 
 use cache::CapellaCache;
 
+/// Backend defines a generic backend that can be forwarded metrics from capella.
 pub trait Backend {
     /// Flush metrics accepts a `CapellaCache` type and forwards it to the backend that
     /// implements it.

@@ -8,11 +8,13 @@ use std::num::{ParseFloatError, ParseIntError};
 
 use self::Error::Parse;
 
+/// A type definition for capella's error type.
 pub type CapellaResult<T> = Result<T, Error>;
 
 /// `Error` is used for server side errors that may occur.
 #[derive(Debug)]
 pub enum Error {
+    /// An error that occurs during parsing.
     Parse,
 }
 
