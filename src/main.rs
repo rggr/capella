@@ -11,13 +11,13 @@ extern crate regex;
 extern crate tokio_core;
 extern crate tokio_timer;
 
-mod backend;
-mod cache;
-mod console;
-mod error;
-mod graphite;
-mod parse;
-mod server;
+pub mod backend;
+pub mod cache;
+pub mod console;
+pub mod error;
+pub mod graphite;
+pub mod parse;
+pub mod server;
 
 use std::env;
 
