@@ -21,14 +21,13 @@ var (
 	batchSize   int
 	concurrency int
 	capellaAddr string
-	duration    string
+	duration    time.Duration
 
 	// A set of metrics to chose from.
 	metrics map[int]string
 
-	metricCount    uint64
-	parsedDuration time.Duration
-	wg             sync.WaitGroup
+	metricCount uint64
+	wg          sync.WaitGroup
 )
 
 func init() {
@@ -37,7 +36,7 @@ func init() {
 	flag.IntVar(&batchSize, "b", 100, "the number of metrics to batch before sending")
 	flag.IntVar(&concurrency, "c", 10, "the number of concurrent connections")
 	flag.StringVar(&capellaAddr, "a", "127.0.0.1:8125", "the address of the capella instance with the port")
-	flag.StringVar(&duration, "d", "30s", "how long the benchmark will last")
+	flag.DurationVar(&duration, "d", 30*time.Second, "how long the benchmark will last")
 }
 
 func readMetricsFile() error {
@@ -63,13 +62,6 @@ func readMetricsFile() error {
 	return nil
 }
 
-// This is here to cut down on some duplication.
-func checkError(err error, msg string) {
-	if err != nil {
-		log.Fatalf("error: %s message: %s\n", err, msg)
-	}
-}
-
 // Get a random metric from the map that was parsed from file earlier.
 func getRandomMetric() string {
 	i := rand.Intn(len(metrics))
@@ -90,7 +82,7 @@ func work() {
 	buffer := bytes.NewBufferString("")
 	batchCounter := 0
 
-	timer := time.After(parsedDuration)
+	timer := time.After(duration)
 	for {
 		select {
 		case <-timer:
@@ -115,7 +107,7 @@ func work() {
 func printSummary() {
 	mc := atomic.LoadUint64(&metricCount)
 	fmt.Printf("metrics sent: %d\n", mc)
-	fmt.Printf("metrics per second: %.2f\n", float64(mc)/parsedDuration.Seconds())
+	fmt.Printf("metrics per second: %.2f\n", float64(mc)/duration.Seconds())
 }
 
 func main() {
@@ -123,10 +115,9 @@ func main() {
 
 	// Read in the sample metrics file.
 	err := readMetricsFile()
-	checkError(err, "reading metrics file")
-
-	parsedDuration, err = time.ParseDuration(duration)
-	checkError(err, "parsing duration from command-line")
+	if err != nil {
+		log.Fatalf("error reading in metrics file: %s\n", err)
+	}
 
 	wg.Add(concurrency)
 	for i := 0; i < concurrency; i++ {
