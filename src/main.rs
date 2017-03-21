@@ -9,6 +9,7 @@ extern crate env_logger;
 extern crate futures;
 extern crate regex;
 extern crate tokio_core;
+extern crate tokio_io;
 extern crate tokio_timer;
 
 pub mod backend;

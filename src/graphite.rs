@@ -84,7 +84,7 @@ impl Backend for Graphite {
                                                  &unix_time));
 
         let send = TcpStream::connect(&self.addr, &handle)
-            .and_then(|out| ::tokio_core::io::write_all(out, buffer));
+            .and_then(|out| ::tokio_io::io::write_all(out, buffer));
         drop(core.run(send));
 
         cache.reset();
