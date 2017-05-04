@@ -1,6 +1,6 @@
 [package]
 name = "capella"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Garrett Squire <garrettsquire@gmail.com>"]
 description = "An asynchronous StatsD clone"
 keywords = ["async", "metrics"]
@@ -10,7 +10,7 @@ license = "MIT"
 
 [dependencies]
 chrono = "0.3"
-dotenv = "0.8"
+dotenv = "0.10"
 env_logger = "0.4"
 futures = "0.1"
 lazy_static = "0.2"
